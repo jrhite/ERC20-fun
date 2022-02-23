@@ -14,11 +14,16 @@ contract TrustlessTrader {
   mapping (address => ERC20TokenBalance) public balances;
 
   function deposit(address _token, uint _amount) public {
+    // who is msg.sender?
+
     IERC20 token = IERC20(_token);
 
+    // 1. transferFrom(): transfer user's ERC20 token balance from user to contract
     require(token.transferFrom(msg.sender, address(this), _amount), "deposit(): transferFrom() failed");
 
-    require(token.approve(address(this), _amount), "deposit(): approve(): failed");
+    // 2. approve this contract to use ERC20 tokens
+    // inside the token.approve() function, who is msg.sender?
+    // require(token.approve(address(this), _amount), "deposit(): approve() failed");
 
     balances[msg.sender] = ERC20TokenBalance(_token, _amount);
   }
@@ -28,9 +33,9 @@ contract TrustlessTrader {
 
     ERC20TokenBalance memory userBalance = balances[msg.sender];
 
-    require(userBalance.tokenAddr == _token && userBalance.balance > 0, "withdraw(): user has 0 balance");
+    require(userBalance.tokenAddr == _token && userBalance.balance > 0, "withdraw(): user has 0 token balance");
 
-    require(token.transfer(msg.sender, userBalance.balance), "withdraw(): transfer() failed");
+    require(token.transfer(msg.sender, userBalance.balance), "withdraw(): transferFrom failed");
 
     balances[msg.sender] = ERC20TokenBalance(_token, 0);
   }
@@ -39,10 +44,10 @@ contract TrustlessTrader {
     ERC20TokenBalance memory msgSenderBalance = balances[msg.sender];
     ERC20TokenBalance memory counterPartyBalance = balances[counterParty];
 
-    require(msgSenderBalance.balance > 0, "msg.sender has insufficient balance");
-    require(counterPartyBalance.balance > 0, "counterparty has insufficient balance");
+    require(msgSenderBalance.balance > 0, "tradeWith(): msg.sender has insufficient balance");
+    require(counterPartyBalance.balance > 0, "tradeWith(): counterPartyBalance has insufficient balance");
 
-    require(msgSenderBalance.balance == counterPartyBalance.balance, "msg.sender and counterparty balances not equal");
+    require(msgSenderBalance.balance == counterPartyBalance.balance, "msg.sender and counterParty do not have equal balances");
 
     uint amount = msgSenderBalance.balance;
 
@@ -52,7 +57,7 @@ contract TrustlessTrader {
     require(token1.transfer(counterParty, amount), "transfer of token1 failed");
     require(token2.transfer(msg.sender, amount), "transfer of token2 failed");
 
-    balances[msg.sender] = ERC20TokenBalance(address(token1), 0);
-    balances[counterParty] = ERC20TokenBalance(address(token2), 0);
+    balances[msg.sender] = ERC20TokenBalance(msgSenderBalance.tokenAddr, 0);
+    balances[msg.sender] = ERC20TokenBalance(msgSenderBalance.tokenAddr, 0);
   }
 }

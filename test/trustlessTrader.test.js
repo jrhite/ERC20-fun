@@ -40,11 +40,7 @@ describe("TrustlessTrader", function () {
   it("deposits erc20 token", async function () {
     trustlessTrader = await trustlessTrader.connect(munchinTokenOwner);
 
-    let munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    let trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
-
-    console.log(`munchinTokenOwnerBalance before deposit = ${ethers.utils.formatUnits(munchinTokenOwnerBalance, 18)}`);
-    console.log(`trustlessTraderBalance before deposit = ${ethers.utils.formatUnits(trustlessTraderBalance, 18)}`);
+    await printBalances('before deposits');
 
     const approveTxn = await munchinToken.approve(trustlessTrader.address, initialSupply);
     await approveTxn.wait();
@@ -52,11 +48,10 @@ describe("TrustlessTrader", function () {
     const depositTxn = await trustlessTrader.deposit(munchinToken.address, initialSupply);
     await depositTxn.wait();
 
-    munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
+    let munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
+    let trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
 
-    console.log(`munchinTokenOwnerBalance after deposit = ${ethers.utils.formatUnits(munchinTokenOwnerBalance, 18)}`);
-    console.log(`trustlessTraderBalance after deposit = ${ethers.utils.formatUnits(trustlessTraderBalance, 18)}`);
+    await printBalances("after deposits");
 
     expect(munchinTokenOwnerBalance).to.equal(ethers.BigNumber.from("0"));
     expect(trustlessTraderBalance).to.equal(initialSupply);
@@ -65,11 +60,7 @@ describe("TrustlessTrader", function () {
   it("withdraws erc20 token", async function () {
     trustlessTrader = await trustlessTrader.connect(munchinTokenOwner);
 
-    let munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    let trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
-
-    console.log(`munchinTokenOwnerBalance before deposit = ${ethers.utils.formatUnits(munchinTokenOwnerBalance, 18)}`);
-    console.log(`trustlessTraderBalance before deposit = ${ethers.utils.formatUnits(trustlessTraderBalance, 18)}`);
+    await printBalances("before deposits");
 
     const approveTxn = await munchinToken.approve(trustlessTrader.address, initialSupply);
     await approveTxn.wait();
@@ -77,20 +68,15 @@ describe("TrustlessTrader", function () {
     const depositTxn = await trustlessTrader.deposit(munchinToken.address, initialSupply);
     await depositTxn.wait();
 
-    munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
-
-    console.log(`munchinTokenOwnerBalance after deposit = ${ethers.utils.formatUnits(munchinTokenOwnerBalance, 18)}`);
-    console.log(`trustlessTraderBalance after deposit = ${ethers.utils.formatUnits(trustlessTraderBalance, 18)}`);
+    await printBalances("after deposits");
 
     const withdrawTxn = await trustlessTrader.withdraw(munchinToken.address);
     await withdrawTxn.wait();
 
-    munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
+    let munchinTokenOwnerBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
+    let trustlessTraderBalance = await munchinToken.balanceOf(trustlessTrader.address);
 
-    console.log(`munchinTokenOwnerBalance after withdraw = ${ethers.utils.formatUnits(munchinTokenOwnerBalance, 18)}`);
-    console.log(`trustlessTraderBalance after withdraw = ${ethers.utils.formatUnits(trustlessTraderBalance, 18)}`);
+    await printBalances("after withdrawals");
 
     expect(munchinTokenOwnerBalance).to.equal(initialSupply);
     expect(trustlessTraderBalance).to.equal(ethers.BigNumber.from("0"));
@@ -99,25 +85,7 @@ describe("TrustlessTrader", function () {
   it("swaps with counterparty", async function () {
     trustlessTrader = await trustlessTrader.connect(munchinTokenOwner);
 
-    let munchinTokenOwnerMunchinBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    let bengalTokenOwnerMunchinBalance = await munchinToken.balanceOf(bengalTokenOwner.address);
-    let trustlessTraderMunchinBalance = await munchinToken.balanceOf(trustlessTrader.address);
-
-    let munchinTokenOwnerBengalBalance = await bengalToken.balanceOf(munchinTokenOwner.address);
-    let bengalTokenOwnerBengalBalance = await bengalToken.balanceOf(bengalTokenOwner.address);
-    let trustlessTraderBengalBalance = await bengalToken.balanceOf(trustlessTrader.address);
-
-    console.log(`--------------------------------------------------`);
-    console.log(`MunchinToken Balances before deposits`);
-    console.log(`    munchinTokenOwner = ${ethers.utils.formatUnits(munchinTokenOwnerMunchinBalance, 18)}`);
-    console.log(`    bengalTokenOwner = ${ethers.utils.formatUnits(bengalTokenOwnerMunchinBalance, 18)}`);
-    console.log(`    trustlessTraderContract = ${ethers.utils.formatUnits(trustlessTraderMunchinBalance, 18)}`);
-
-    console.log(`--------------------------------------------------`);
-    console.log(`BengalToken Balances before deposits`);
-    console.log(`    munchinTokenOwner = ${ethers.utils.formatUnits(munchinTokenOwnerBengalBalance, 18)}`);
-    console.log(`    bengalTokenOwner = ${ethers.utils.formatUnits(bengalTokenOwnerBengalBalance, 18)}`);
-    console.log(`    trustlessTraderContract = ${ethers.utils.formatUnits(trustlessTraderBengalBalance, 18)}`);
+    await printBalances("before deposits");
 
     // 1. approve contract to spend MunchinToken on user's behalf
     let approveTxn = await munchinToken.approve(trustlessTrader.address, initialSupply);
@@ -137,33 +105,19 @@ describe("TrustlessTrader", function () {
     depositTxn = await trustlessTrader.deposit(bengalToken.address, initialSupply);
     await depositTxn.wait();
 
-    munchinTokenOwnerMunchinBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
-    bengalTokenOwnerMunchinBalance = await munchinToken.balanceOf(bengalTokenOwner.address);
-    trustlessTraderMunchinBalance = await munchinToken.balanceOf(trustlessTrader.address);
+    await printBalances("after deposits");
 
-    munchinTokenOwnerBengalBalance = await bengalToken.balanceOf(munchinTokenOwner.address);
-    bengalTokenOwnerBengalBalance = await bengalToken.balanceOf(bengalTokenOwner.address);
-    trustlessTraderBengalBalance = await bengalToken.balanceOf(trustlessTrader.address);
-
-    console.log(`--------------------------------------------------`);
-    console.log(`MunchinToken Balances after deposits`);
-    console.log(`    munchinTokenOwner = ${ethers.utils.formatUnits(munchinTokenOwnerMunchinBalance, 18)}`);
-    console.log(`    bengalTokenOwner = ${ethers.utils.formatUnits(bengalTokenOwnerMunchinBalance, 18)}`);
-    console.log(`    trustlessTraderContract = ${ethers.utils.formatUnits(trustlessTraderMunchinBalance, 18)}`);
-
-    console.log(`--------------------------------------------------`);
-    console.log(`BengalToken Balances after deposits`);
-    console.log(`    munchinTokenOwner = ${ethers.utils.formatUnits(munchinTokenOwnerBengalBalance, 18)}`);
-    console.log(`    bengalTokenOwner = ${ethers.utils.formatUnits(bengalTokenOwnerBengalBalance, 18)}`);
-    console.log(`    trustlessTraderContract = ${ethers.utils.formatUnits(trustlessTraderBengalBalance, 18)}`);
-
-    // perform trustlessTrader.tradeWith()
+    // 3. perform trustlessTrader.tradeWith()
 
     trustlessTrader = await trustlessTrader.connect(munchinTokenOwner);
 
     const swapWithTxn = await trustlessTrader.tradeWith(bengalTokenOwner.address);
     await swapWithTxn.wait();
 
+    await printBalances('after tradeWith()');
+  });
+
+  async function printBalances(msg) {
     munchinTokenOwnerMunchinBalance = await munchinToken.balanceOf(munchinTokenOwner.address);
     bengalTokenOwnerMunchinBalance = await munchinToken.balanceOf(bengalTokenOwner.address);
     trustlessTraderMunchinBalance = await munchinToken.balanceOf(trustlessTrader.address);
@@ -173,15 +127,15 @@ describe("TrustlessTrader", function () {
     trustlessTraderBengalBalance = await bengalToken.balanceOf(trustlessTrader.address);
 
     console.log(`--------------------------------------------------`);
-    console.log(`MunchinToken Balances after tradeWith`);
+    console.log(`MunchinToken Balances ${msg}`);
     console.log(`    munchinTokenOwner = ${ethers.utils.formatUnits(munchinTokenOwnerMunchinBalance, 18)}`);
     console.log(`    bengalTokenOwner = ${ethers.utils.formatUnits(bengalTokenOwnerMunchinBalance, 18)}`);
     console.log(`    trustlessTraderContract = ${ethers.utils.formatUnits(trustlessTraderMunchinBalance, 18)}`);
 
     console.log(`--------------------------------------------------`);
-    console.log(`BengalToken Balances after tradeWith`);
+    console.log(`BengalToken Balances ${msg}`);
     console.log(`    munchinTokenOwner = ${ethers.utils.formatUnits(munchinTokenOwnerBengalBalance, 18)}`);
     console.log(`    bengalTokenOwner = ${ethers.utils.formatUnits(bengalTokenOwnerBengalBalance, 18)}`);
     console.log(`    trustlessTraderContract = ${ethers.utils.formatUnits(trustlessTraderBengalBalance, 18)}`);
-  });
+  }
 });
